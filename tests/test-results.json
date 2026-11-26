@@ -1,0 +1,453 @@
+{
+  "executedAt": "2026-11-26T06:57:07.917Z",
+  "totalScenarios": 18,
+  "passedScenarios": 18,
+  "failedScenarios": 0,
+  "scenarios": [
+    {
+      "no": 1,
+      "category": "Wajib",
+      "title": "Login dengan kredensial benar",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "authHeader": "(Tanpa Authorization Header)",
+      "requestBody": {
+        "username": "mhs01",
+        "password": "Mhs12345!"
+      },
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "note": "Token JWT diterima (masked pada laporan demi keamanan)",
+      "responseBody": {
+        "success": true,
+        "message": "Login berhasil.",
+        "data": {
+          "token": "eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+          "tokenType": "Bearer",
+          "expiresIn": "1h",
+          "user": {
+            "id": "USR-MHS-01",
+            "username": "mhs01",
+            "nama": "Ahmad Fauzi",
+            "role": "mahasiswa",
+            "mahasiswaId": "240101001"
+          }
+        }
+      }
+    },
+    {
+      "no": 2,
+      "category": "Wajib",
+      "title": "Login dengan password salah",
+      "method": "POST",
+      "endpoint": "/api/auth/login",
+      "authHeader": "(Tanpa Authorization Header)",
+      "requestBody": {
+        "username": "mhs01",
+        "password": "SalahPassword!"
+      },
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "note": "Sistem menolak kredensial tidak cocok tanpa membocorkan detail akun",
+      "responseBody": {
+        "success": false,
+        "message": "Username atau password salah."
+      }
+    },
+    {
+      "no": 3,
+      "category": "Wajib",
+      "title": "Akses endpoint terlindungi tanpa token",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "(Tanpa Authorization Header)",
+      "requestBody": null,
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "note": "Middleware authenticate menolak akses anonim",
+      "responseBody": {
+        "success": false,
+        "message": "Akses ditolak. Header Authorization Bearer Token wajib disertakan."
+      }
+    },
+    {
+      "no": 4,
+      "category": "Wajib",
+      "title": "Akses menggunakan token tidak valid",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiJ9.pay...aTanganSalah",
+      "requestBody": null,
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "note": "Verifikasi tanda tangan JWT gagal dan ditolak",
+      "responseBody": {
+        "success": false,
+        "message": "Token autentikasi tidak valid."
+      }
+    },
+    {
+      "no": 5,
+      "category": "Wajib",
+      "title": "Mahasiswa membuat pengaduan valid",
+      "method": "POST",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": {
+        "judul": "AC Ruang Kuliah R-301 Tidak Dingin",
+        "kategori": "Fasilitas",
+        "deskripsi": "AC di ruang kuliah R-301 mati sejak kemarin siang sehingga perkuliahan tidak nyaman."
+      },
+      "expectedStatus": 201,
+      "actualStatus": 201,
+      "passed": true,
+      "note": "ID (4), mahasiswaId (240101001), status (diajukan), dan createdAt diisi otomatis oleh server",
+      "responseBody": {
+        "success": true,
+        "message": "Pengaduan berhasil dibuat.",
+        "data": {
+          "id": 4,
+          "mahasiswaId": "240101001",
+          "judul": "AC Ruang Kuliah R-301 Tidak Dingin",
+          "kategori": "Fasilitas",
+          "deskripsi": "AC di ruang kuliah R-301 mati sejak kemarin siang sehingga perkuliahan tidak nyaman.",
+          "status": "diajukan",
+          "createdAt": "2026-11-26T06:57:07.887Z"
+        }
+      }
+    },
+    {
+      "no": 6,
+      "category": "Wajib",
+      "title": "Mahasiswa membaca pengaduan sendiri",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/1",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": null,
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "note": "Mahasiswa 240101001 diizinkan membaca detail pengaduan ID 1 miliknya",
+      "responseBody": {
+        "success": true,
+        "message": "Detail pengaduan berhasil diambil.",
+        "data": {
+          "id": 1,
+          "mahasiswaId": "240101001",
+          "judul": "Proyektor Ruang Lab TI-2 Rusak",
+          "kategori": "Fasilitas",
+          "deskripsi": "Proyektor di ruang laboratorium TI-2 tidak menampilkan gambar sejak hari Senin pagi.",
+          "status": "diajukan",
+          "createdAt": "2026-11-18T08:30:00.000Z"
+        }
+      }
+    },
+    {
+      "no": 7,
+      "category": "Wajib",
+      "title": "Mahasiswa mencoba membaca pengaduan orang lain",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/3",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": null,
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "passed": true,
+      "note": "Pengaduan ID 3 milik 240101002 sehingga ditolak 403 Forbidden",
+      "responseBody": {
+        "success": false,
+        "message": "Akses ditolak. Anda tidak memiliki izin melihat pengaduan milik mahasiswa lain."
+      }
+    },
+    {
+      "no": 8,
+      "category": "Wajib",
+      "title": "Mahasiswa mengubah status pengaduan",
+      "method": "PATCH",
+      "endpoint": "/api/pengaduan/1/status",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": {
+        "status": "selesai"
+      },
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "passed": true,
+      "note": "Middleware RBAC authorizeRoles(\"admin\") menolak peran mahasiswa",
+      "responseBody": {
+        "success": false,
+        "message": "Akses ditolak. Peran 'mahasiswa' tidak memiliki izin untuk melakukan operasi ini."
+      }
+    },
+    {
+      "no": 9,
+      "category": "Wajib",
+      "title": "Admin melihat seluruh pengaduan",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5...OcDYsKBqJXXs",
+      "requestBody": null,
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "note": "Admin melihat seluruh 4 pengaduan lintas mahasiswa (240101001 dan 240101002)",
+      "responseBody": {
+        "success": true,
+        "message": "Daftar pengaduan berhasil diambil.",
+        "total": 4,
+        "data": [
+          {
+            "id": 1,
+            "mahasiswaId": "240101001",
+            "judul": "Proyektor Ruang Lab TI-2 Rusak",
+            "kategori": "Fasilitas",
+            "deskripsi": "Proyektor di ruang laboratorium TI-2 tidak menampilkan gambar sejak hari Senin pagi.",
+            "status": "diajukan",
+            "createdAt": "2026-11-18T08:30:00.000Z"
+          },
+          {
+            "id": 2,
+            "mahasiswaId": "240101001",
+            "judul": "Gangguan Akses Wi-Fi Gedung Fakultas",
+            "kategori": "TI",
+            "deskripsi": "Koneksi Wi-Fi kampus di lantai 2 sering terputus saat jam perkuliahan berlangsung.",
+            "status": "diproses",
+            "createdAt": "2026-11-18T10:15:00.000Z"
+          },
+          {
+            "id": 3,
+            "mahasiswaId": "240101002",
+            "judul": "Keterlambatan Validasi KRS Semester Ganjil",
+            "kategori": "Akademik",
+            "deskripsi": "Pengajuan perubahan KRS di portal akademik belum tervalidasi selama tiga hari kerja.",
+            "status": "diajukan",
+            "createdAt": "2026-11-19T01:45:00.000Z"
+          },
+          {
+            "id": 4,
+            "mahasiswaId": "240101001",
+            "judul": "AC Ruang Kuliah R-301 Tidak Dingin",
+            "kategori": "Fasilitas",
+            "deskripsi": "AC di ruang kuliah R-301 mati sejak kemarin siang sehingga perkuliahan tidak nyaman.",
+            "status": "diajukan",
+            "createdAt": "2026-11-26T06:57:07.887Z"
+          }
+        ]
+      }
+    },
+    {
+      "no": 10,
+      "category": "Wajib",
+      "title": "Admin memperbarui status pengaduan",
+      "method": "PATCH",
+      "endpoint": "/api/pengaduan/1/status",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5...OcDYsKBqJXXs",
+      "requestBody": {
+        "status": "diproses"
+      },
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "note": "Status ID 1 diperbarui ke diproses; mahasiswaId tetap 240101001",
+      "responseBody": {
+        "success": true,
+        "message": "Status pengaduan berhasil diperbarui.",
+        "data": {
+          "id": 1,
+          "mahasiswaId": "240101001",
+          "judul": "Proyektor Ruang Lab TI-2 Rusak",
+          "kategori": "Fasilitas",
+          "deskripsi": "Proyektor di ruang laboratorium TI-2 tidak menampilkan gambar sejak hari Senin pagi.",
+          "status": "diproses",
+          "createdAt": "2026-11-18T08:30:00.000Z"
+        }
+      }
+    },
+    {
+      "no": 11,
+      "category": "Wajib",
+      "title": "Membuat pengaduan dengan field wajib kosong",
+      "method": "POST",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": {
+        "judul": "",
+        "kategori": "Fasilitas",
+        "deskripsi": ""
+      },
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true,
+      "note": "Middleware validasi menolak input kosong sebelum menyentuh service/repository",
+      "responseBody": {
+        "success": false,
+        "message": "Validasi data pengaduan gagal.",
+        "errors": [
+          "Field judul wajib diisi.",
+          "Field deskripsi wajib diisi."
+        ]
+      }
+    },
+    {
+      "no": 12,
+      "category": "Wajib",
+      "title": "Mengakses ID pengaduan yang tidak ditemukan",
+      "method": "GET",
+      "endpoint": "/api/pengaduan/999",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5...OcDYsKBqJXXs",
+      "requestBody": null,
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "passed": true,
+      "note": "Pengaduan ID 999 tidak ada sehingga mengembalikan 404 Not Found",
+      "responseBody": {
+        "success": false,
+        "message": "Pengaduan dengan ID 999 tidak ditemukan."
+      }
+    },
+    {
+      "no": 13,
+      "category": "Tambahan",
+      "title": "Mahasiswa mengubah pengaduan sendiri (status diajukan)",
+      "method": "PUT",
+      "endpoint": "/api/pengaduan/4",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": {
+        "judul": "AC Ruang Kuliah R-301 Mati Total",
+        "kategori": "Fasilitas",
+        "deskripsi": "Pembaruan laporan: teknisi belum datang dan kedua unit AC di R-301 mati."
+      },
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "note": "Diperbolehkan karena milik mhs01 dan status masih diajukan",
+      "responseBody": {
+        "success": true,
+        "message": "Pengaduan berhasil diperbarui.",
+        "data": {
+          "id": 4,
+          "mahasiswaId": "240101001",
+          "judul": "AC Ruang Kuliah R-301 Mati Total",
+          "kategori": "Fasilitas",
+          "deskripsi": "Pembaruan laporan: teknisi belum datang dan kedua unit AC di R-301 mati.",
+          "status": "diajukan",
+          "createdAt": "2026-11-26T06:57:07.887Z"
+        }
+      }
+    },
+    {
+      "no": 14,
+      "category": "Tambahan",
+      "title": "Mahasiswa mengubah pengaduan sendiri berstatus diproses",
+      "method": "PUT",
+      "endpoint": "/api/pengaduan/1",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": {
+        "judul": "Coba Ubah Pengaduan Diproses",
+        "kategori": "Fasilitas",
+        "deskripsi": "Percobaan mengubah pengaduan yang sudah berstatus diproses oleh admin."
+      },
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "passed": true,
+      "note": "Ditolak karena kebijakan status hanya memperbolehkan edit saat status diajukan",
+      "responseBody": {
+        "success": false,
+        "message": "Pengaduan tidak dapat diubah karena status saat ini adalah 'diproses'. Perubahan hanya diizinkan selama berstatus 'diajukan'."
+      }
+    },
+    {
+      "no": 15,
+      "category": "Tambahan",
+      "title": "Menolak field terlarang (mahasiswaId/status) pada POST",
+      "method": "POST",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": {
+        "mahasiswaId": "240101002",
+        "status": "selesai",
+        "judul": "Percobaan Manipulasi Identitas",
+        "kategori": "TI",
+        "deskripsi": "Mencoba memalsukan identitas pemilik dan status dari sisi client."
+      },
+      "expectedStatus": 400,
+      "actualStatus": 400,
+      "passed": true,
+      "note": "Validasi whitelist menolak mass assignment; jumlah data di repository tetap 4",
+      "responseBody": {
+        "success": false,
+        "message": "Request memuat field yang tidak diperbolehkan.",
+        "errors": [
+          "Field tidak diperbolehkan: mahasiswaId, status. Hanya field judul, kategori, dan deskripsi yang diterima."
+        ]
+      }
+    },
+    {
+      "no": 16,
+      "category": "Tambahan",
+      "title": "Admin mencoba membuat pengaduan baru",
+      "method": "POST",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5...OcDYsKBqJXXs",
+      "requestBody": {
+        "judul": "Pengaduan oleh Admin",
+        "kategori": "Akademik",
+        "deskripsi": "Seharusnya ditolak karena sesuai matriks hanya mahasiswa yang boleh membuat."
+      },
+      "expectedStatus": 403,
+      "actualStatus": 403,
+      "passed": true,
+      "note": "Sesuai matriks hak akses, Admin tidak memiliki izin membuat pengaduan",
+      "responseBody": {
+        "success": false,
+        "message": "Akses ditolak. Peran 'admin' tidak memiliki izin untuk melakukan operasi ini."
+      }
+    },
+    {
+      "no": 17,
+      "category": "Tambahan",
+      "title": "Mahasiswa menghapus pengaduan sendiri (status diajukan)",
+      "method": "DELETE",
+      "endpoint": "/api/pengaduan/4",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5..._KcPEzUlJZYk",
+      "requestBody": null,
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "passed": true,
+      "note": "Pengaduan ID 4 berhasil dihapus oleh pemiliknya saat masih berstatus diajukan",
+      "responseBody": {
+        "success": true,
+        "message": "Pengaduan berhasil dihapus.",
+        "data": {
+          "id": 4,
+          "mahasiswaId": "240101001",
+          "judul": "AC Ruang Kuliah R-301 Mati Total",
+          "kategori": "Fasilitas",
+          "deskripsi": "Pembaruan laporan: teknisi belum datang dan kedua unit AC di R-301 mati.",
+          "status": "diajukan",
+          "createdAt": "2026-11-26T06:57:07.887Z"
+        }
+      }
+    },
+    {
+      "no": 18,
+      "category": "Tambahan",
+      "title": "Akses endpoint menggunakan token kedaluwarsa (expired)",
+      "method": "GET",
+      "endpoint": "/api/pengaduan",
+      "authHeader": "Bearer eyJhbGciOiJIUzI1NiIsInR5...J5L78rfZDMr0",
+      "requestBody": null,
+      "expectedStatus": 401,
+      "actualStatus": 401,
+      "passed": true,
+      "note": "jwt.verify mendeteksi TokenExpiredError dan menolak dengan 401",
+      "responseBody": {
+        "success": false,
+        "message": "Token autentikasi telah kedaluwarsa. Silakan login kembali."
+      }
+    }
+  ]
+}

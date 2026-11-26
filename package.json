@@ -1,0 +1,35 @@
+{
+  "name": "simadu-api",
+  "version": "1.0.0",
+  "description": "Sistem Layanan Informasi dan Pengaduan Mahasiswa (SIMADU API) - UTS Web Service Engineering",
+  "main": "server.cjs",
+  "scripts": {
+    "start": "node server.cjs",
+    "dev": "node --watch server.cjs",
+    "test": "node --test tests/api.test.cjs",
+    "test:report": "node tests/run-scenarios.cjs"
+  },
+  "keywords": [
+    "rest-api",
+    "express-5",
+    "nodejs",
+    "jwt",
+    "openapi",
+    "swagger",
+    "simadu"
+  ],
+  "author": "Mahasiswa TI UIN Antasari",
+  "license": "ISC",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "swagger-ui-express": "^5.0.1"
+  }
+}

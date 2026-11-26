@@ -1,0 +1,128 @@
+### SIMADU API — Skenario Pengujian HTTP Client (VS Code REST Client)
+@baseUrl = http://localhost:3000
+
+### 1. Login Mahasiswa 1 (Kredensial Benar -> 200)
+# @name loginMhs1
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "mhs01",
+  "password": "Mhs12345!"
+}
+
+###
+@mhs1Token = {{loginMhs1.response.body.data.token}}
+
+### 1b. Login Administrator (Kredensial Benar -> 200)
+# @name loginAdmin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin01",
+  "password": "Admin12345!"
+}
+
+###
+@adminToken = {{loginAdmin.response.body.data.token}}
+
+### 2. Login dengan Password Salah (-> 401)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "mhs01",
+  "password": "PasswordSalah!"
+}
+
+### 3. Akses Endpoint Terlindungi Tanpa Token (-> 401)
+GET {{baseUrl}}/api/pengaduan
+
+### 4. Akses Menggunakan Token Tidak Valid (-> 401)
+GET {{baseUrl}}/api/pengaduan
+Authorization: Bearer token.tidak.valid
+
+### 5. Mahasiswa Membuat Pengaduan Valid (-> 201)
+POST {{baseUrl}}/api/pengaduan
+Authorization: Bearer {{mhs1Token}}
+Content-Type: application/json
+
+{
+  "judul": "AC Ruang Kuliah R-301 Tidak Dingin",
+  "kategori": "Fasilitas",
+  "deskripsi": "AC di ruang kuliah R-301 mati sejak kemarin siang sehingga perkuliahan terganggu."
+}
+
+### 6. Mahasiswa Membaca Pengaduan Sendiri (-> 200)
+GET {{baseUrl}}/api/pengaduan/1
+Authorization: Bearer {{mhs1Token}}
+
+### 7. Mahasiswa Mencoba Membaca Pengaduan Orang Lain (-> 403)
+GET {{baseUrl}}/api/pengaduan/3
+Authorization: Bearer {{mhs1Token}}
+
+### 8. Mahasiswa Mengubah Status Pengaduan (-> 403)
+PATCH {{baseUrl}}/api/pengaduan/1/status
+Authorization: Bearer {{mhs1Token}}
+Content-Type: application/json
+
+{
+  "status": "selesai"
+}
+
+### 9. Admin Melihat Seluruh Pengaduan (-> 200)
+GET {{baseUrl}}/api/pengaduan
+Authorization: Bearer {{adminToken}}
+
+### 10. Admin Memperbarui Status Pengaduan (-> 200)
+PATCH {{baseUrl}}/api/pengaduan/1/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "diproses"
+}
+
+### 11. Membuat Pengaduan dengan Field Wajib Kosong (-> 400)
+POST {{baseUrl}}/api/pengaduan
+Authorization: Bearer {{mhs1Token}}
+Content-Type: application/json
+
+{
+  "judul": "",
+  "kategori": "Fasilitas",
+  "deskripsi": ""
+}
+
+### 12. Mengakses ID Pengaduan yang Tidak Ditemukan (-> 404)
+GET {{baseUrl}}/api/pengaduan/999
+Authorization: Bearer {{adminToken}}
+
+### 13. Mahasiswa Mengubah Pengaduan Sendiri (status diajukan -> 200)
+PUT {{baseUrl}}/api/pengaduan/4
+Authorization: Bearer {{mhs1Token}}
+Content-Type: application/json
+
+{
+  "judul": "AC Ruang Kuliah R-301 Mati Total",
+  "kategori": "Fasilitas",
+  "deskripsi": "Pembaruan laporan: kedua unit AC di ruang kuliah R-301 tidak berfungsi."
+}
+
+### 14. Mahasiswa Menghapus Pengaduan Sendiri (status diajukan -> 200)
+DELETE {{baseUrl}}/api/pengaduan/4
+Authorization: Bearer {{mhs1Token}}
+
+### 15. Menolak Field Terlarang (mahasiswaId & status -> 400)
+POST {{baseUrl}}/api/pengaduan
+Authorization: Bearer {{mhs1Token}}
+Content-Type: application/json
+
+{
+  "mahasiswaId": "240101002",
+  "status": "selesai",
+  "judul": "Percobaan Mass Assignment",
+  "kategori": "TI",
+  "deskripsi": "Mencoba memanipulasi identitas pemilik dan status dari sisi client."
+}
